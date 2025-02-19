@@ -183,6 +183,7 @@ static struct {
              }
              
              ctx.toVC = toVC;
+             NSLog(@"addObserver toVC: %@ toVC.view: %@", toVC, toVC.view);
              [toVC.view addObserver:self
                          forKeyPath:NSStringFromSelector(@selector(bounds))
                             options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld
@@ -206,12 +207,17 @@ static struct {
          
          UIViewController *const toVC  = [context viewControllerForKey:UITransitionContextToViewControllerKey];
          if (showFakeBar && ctx.toVC == toVC) {
-             [toVC.view removeObserver:self
-                            forKeyPath:NSStringFromSelector(@selector(bounds))
-                               context:&ctx];
-             [toVC.view removeObserver:self
-                            forKeyPath:NSStringFromSelector(@selector(frame))
-                               context:&ctx];
+             NSLog(@"removeObserver toVC: %@ toVC.view: %@ isCancelled: %@", toVC, toVC.view, [context isCancelled] == YES ? @"YES" : @"NO");
+              @try {
+                  [toVC.view removeObserver:self
+                                 forKeyPath:NSStringFromSelector(@selector(bounds))
+                                    context:&ctx];
+                  [toVC.view removeObserver:self
+                                 forKeyPath:NSStringFromSelector(@selector(frame))
+                                    context:&ctx];
+              } @catch (NSException *exception) {
+                  NSLog(@"移除 KVO 观察者失败: %@", exception.reason);
+             }
          }
          
          if (self) self.isTransitionNavigationBar = NO;
